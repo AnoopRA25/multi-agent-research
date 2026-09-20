@@ -63,4 +63,4 @@ Rules:
 5. Do not add a Sources section because sources are returned separately.
 """
 
-    return generate_answer(prompt)
+    return generate_answer(prompt).text

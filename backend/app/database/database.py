@@ -10,9 +10,7 @@ DATABASE_PATH = DATABASE_DIR / "research.db"
 
 def get_connection() -> sqlite3.Connection:
     connection = sqlite3.connect(DATABASE_PATH)
-
     connection.row_factory = sqlite3.Row
-
     return connection
 
 
@@ -42,6 +40,26 @@ def initialize_database() -> None:
                 agent_name TEXT NOT NULL,
                 status TEXT NOT NULL,
                 latency_ms REAL,
+                input_tokens INTEGER,
+                output_tokens INTEGER,
+                estimated_cost_usd REAL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (run_id) REFERENCES research_runs(id)
+            )
+            """
+        )
+
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS evaluations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                run_id INTEGER NOT NULL,
+                relevance_score REAL NOT NULL,
+                completeness_score REAL NOT NULL,
+                evidence_score REAL NOT NULL,
+                factuality_score REAL NOT NULL,
+                overall_score REAL NOT NULL,
+                feedback TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (run_id) REFERENCES research_runs(id)
             )

@@ -41,4 +41,4 @@ Do not invent information.
 Return a structured analytical summary that another agent can use to write the final report.
 """
 
-    return generate_answer(prompt)
+    return generate_answer(prompt).text

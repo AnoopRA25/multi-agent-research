@@ -24,7 +24,7 @@ Do not add numbering, bullets, explanations, or other text.
 
     questions = [
         line.strip()
-        for line in response.splitlines()
+        for line in response.text.splitlines()
         if line.strip()
     ]
 

@@ -1,0 +1,35 @@
+[
+  {
+    "id": "eval_001",
+    "question": "What are the major applications of generative AI?",
+    "criteria": [
+      "Identifies major application areas",
+      "Provides supporting evidence",
+      "Explains important use cases",
+      "Mentions limitations or uncertainty",
+      "Avoids unsupported claims"
+    ]
+  },
+  {
+    "id": "eval_002",
+    "question": "What are the major challenges of deploying machine learning systems in production?",
+    "criteria": [
+      "Identifies important production challenges",
+      "Discusses data and model issues",
+      "Discusses infrastructure or operational issues",
+      "Provides supporting evidence",
+      "Mentions limitations or uncertainty"
+    ]
+  },
+  {
+    "id": "eval_003",
+    "question": "How is 5G different from 4G in terms of capabilities and applications?",
+    "criteria": [
+      "Explains major capability differences",
+      "Discusses performance characteristics",
+      "Identifies important application areas",
+      "Provides supporting evidence",
+      "Avoids unsupported claims"
+    ]
+  }
+]

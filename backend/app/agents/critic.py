@@ -58,4 +58,4 @@ Do not invent facts.
 Base the critique only on the information provided above.
 """
 
-    return generate_answer(prompt)
+    return generate_answer(prompt).text
