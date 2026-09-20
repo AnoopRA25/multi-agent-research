@@ -1,6 +1,7 @@
 import time
 
 from backend.app.database.execution_repository import create_agent_execution
+from backend.app.services.llm import get_last_usage
 
 
 def track_agent_execution(
@@ -17,11 +18,15 @@ def track_agent_execution(
 
         latency_ms = (time.perf_counter() - start_time) * 1000
 
+        input_tokens, output_tokens = get_last_usage()
+
         create_agent_execution(
             run_id=run_id,
             agent_name=agent_name,
             status="completed",
             latency_ms=round(latency_ms, 2),
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
         )
 
         return result
