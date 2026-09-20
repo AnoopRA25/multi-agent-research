@@ -2,11 +2,7 @@ import time
 
 from fastapi import APIRouter, HTTPException
 
-from backend.app.agents.analyst import analyze
-from backend.app.agents.critic import critique_report
-from backend.app.agents.planner import create_plan
-from backend.app.agents.researcher import research
-from backend.app.agents.writer import write_report
+from backend.app.graph.workflow import research_graph
 from backend.app.schemas import QueryRequest, QueryResponse
 
 router = APIRouter()
@@ -17,34 +13,12 @@ def query(request: QueryRequest):
     start_time = time.perf_counter()
 
     try:
-        # 1. Create research plan
-        research_questions = create_plan(request.query)
+        initial_state = {
+            "query": request.query,
+            "revision_count": 0,
+        }
 
-        # 2. Collect web evidence
-        _, sources = research(
-            request.query,
-            research_questions,
-        )
-
-        # 3. Analyze collected evidence
-        analysis = analyze(
-            request.query,
-            research_questions,
-            sources,
-        )
-
-        # 4. Write research report
-        report = write_report(
-            request.query,
-            analysis,
-        )
-
-        # 5. Critique the generated report
-        critique = critique_report(
-            request.query,
-            analysis,
-            report,
-        )
+        final_state = research_graph.invoke(initial_state)
 
     except RuntimeError as exc:
         raise HTTPException(
@@ -52,12 +26,11 @@ def query(request: QueryRequest):
             detail=str(exc),
         ) from exc
 
-    # 6. Calculate total latency
     latency_ms = (time.perf_counter() - start_time) * 1000
 
     return QueryResponse(
-        answer=report,
-        sources=sources,
-        critique=critique,
+        answer=final_state["report"],
+        sources=final_state.get("sources", []),
+        critique=final_state.get("critique", ""),
         latency_ms=round(latency_ms, 2),
     )

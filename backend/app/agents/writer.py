@@ -4,7 +4,24 @@ from backend.app.services.llm import generate_answer
 def write_report(
     query: str,
     analysis: str,
+    critique: str | None = None,
 ) -> str:
+    revision_context = ""
+
+    if critique:
+        revision_context = f"""
+Previous report critique:
+{critique}
+
+Revise the report based on the critique above.
+
+Fix the identified issues while preserving:
+- factual accuracy
+- evidence limitations
+- important uncertainty
+- the original research findings
+"""
+
     prompt = f"""
 You are a professional research report writer.
 
@@ -14,8 +31,9 @@ Original research question:
 Analyst findings:
 {analysis}
 
-Write a clear, well-structured research report based ONLY on the
-analyst findings provided above.
+{revision_context}
+
+Write a clear, well-structured research report.
 
 Use this structure:
 
