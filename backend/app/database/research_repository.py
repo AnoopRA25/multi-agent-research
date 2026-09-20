@@ -33,6 +33,40 @@ def create_research_run(
     finally:
         connection.close()
 
+def update_research_run(
+    run_id: int,
+    report: str,
+    critique: str,
+    latency_ms: float,
+    status: str = "completed",
+) -> None:
+    connection = get_connection()
+
+    try:
+        connection.execute(
+            """
+            UPDATE research_runs
+            SET
+                report = ?,
+                critique = ?,
+                latency_ms = ?,
+                status = ?
+            WHERE id = ?
+            """,
+            (
+                report,
+                critique,
+                latency_ms,
+                status,
+                run_id,
+            ),
+        )
+
+        connection.commit()
+
+    finally:
+        connection.close()
+
 
 def get_research_run(run_id: int) -> dict | None:
     connection = get_connection()

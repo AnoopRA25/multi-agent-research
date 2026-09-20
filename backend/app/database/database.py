@@ -34,6 +34,20 @@ def initialize_database() -> None:
             """
         )
 
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS agent_executions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                run_id INTEGER NOT NULL,
+                agent_name TEXT NOT NULL,
+                status TEXT NOT NULL,
+                latency_ms REAL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (run_id) REFERENCES research_runs(id)
+            )
+            """
+        )
+
         connection.commit()
 
     finally:
