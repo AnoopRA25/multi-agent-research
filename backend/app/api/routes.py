@@ -40,6 +40,7 @@ def query(request: QueryRequest):
     )
 
     return QueryResponse(
+        run_id=run_id,
         answer=final_state["report"],
         sources=final_state.get("sources", []),
         critique=final_state.get("critique", ""),

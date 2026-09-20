@@ -16,6 +16,7 @@ class Source(BaseModel):
 
 
 class QueryResponse(BaseModel):
+    run_id: int
     answer: str
     sources: list[Source] = []
     critique: str
