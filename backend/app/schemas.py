@@ -9,7 +9,13 @@ class QueryRequest(BaseModel):
     )
 
 
+class Source(BaseModel):
+    title: str
+    url: str
+    snippet: str
+
+
 class QueryResponse(BaseModel):
     answer: str
-    sources: list[str] = []
+    sources: list[Source] = []
     latency_ms: float
