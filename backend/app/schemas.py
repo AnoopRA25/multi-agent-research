@@ -18,4 +18,5 @@ class Source(BaseModel):
 class QueryResponse(BaseModel):
     answer: str
     sources: list[Source] = []
+    critique: str
     latency_ms: float

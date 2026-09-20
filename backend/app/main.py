@@ -3,13 +3,11 @@ from fastapi import FastAPI
 from backend.app.api.routes import router
 from backend.app.config import settings
 
-
 app = FastAPI(
     title=settings.app_name,
     version="0.1.0",
     description="Multi-Agent Research and Report Generation System",
 )
-
 
 app.include_router(router)
 
@@ -26,5 +24,11 @@ def root():
 @app.get("/health")
 def health():
     return {
-        "status": "healthy"
+        "status": "healthy",
+        "environment": settings.app_env,
+        "llm": {
+            "provider": "Google Gemini",
+            "model": settings.llm_model,
+            "configured": bool(settings.gemini_api_key),
+        },
     }
