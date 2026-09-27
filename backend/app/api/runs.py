@@ -1,14 +1,22 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from backend.app.database.execution_repository import list_agent_executions
+from backend.app.database.execution_repository import (
+    list_agent_executions,
+)
 from backend.app.database.research_repository import (
     get_research_run,
     list_research_runs,
 )
+from backend.app.database.source_repository import (
+    list_research_sources,
+)
 
 
-router = APIRouter(prefix="/runs", tags=["Research Runs"])
+router = APIRouter(
+    prefix="/runs",
+    tags=["Research Runs"],
+)
 
 
 class RunStatusResponse(BaseModel):
@@ -22,10 +30,15 @@ class RunStatusResponse(BaseModel):
 
 @router.get("")
 def get_runs():
-    return {"runs": list_research_runs()}
+    return {
+        "runs": list_research_runs(),
+    }
 
 
-@router.get("/{run_id}", response_model=RunStatusResponse)
+@router.get(
+    "/{run_id}",
+    response_model=RunStatusResponse,
+)
 def get_run(run_id: int):
     run = get_research_run(run_id)
 
@@ -58,4 +71,20 @@ def get_run_executions(run_id: int):
     return {
         "run_id": run_id,
         "executions": list_agent_executions(run_id),
+    }
+
+
+@router.get("/{run_id}/sources")
+def get_run_sources(run_id: int):
+    run = get_research_run(run_id)
+
+    if run is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Research run not found",
+        )
+
+    return {
+        "run_id": run_id,
+        "sources": list_research_sources(run_id),
     }

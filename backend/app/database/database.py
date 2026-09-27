@@ -44,7 +44,23 @@ def initialize_database() -> None:
                 output_tokens INTEGER,
                 estimated_cost_usd REAL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (run_id) REFERENCES research_runs(id)
+                FOREIGN KEY (run_id)
+                    REFERENCES research_runs(id)
+            )
+            """
+        )
+
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS research_sources (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                run_id INTEGER NOT NULL,
+                title TEXT NOT NULL,
+                url TEXT NOT NULL,
+                snippet TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (run_id)
+                    REFERENCES research_runs(id)
             )
             """
         )
@@ -61,7 +77,8 @@ def initialize_database() -> None:
                 overall_score REAL NOT NULL,
                 feedback TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (run_id) REFERENCES research_runs(id)
+                FOREIGN KEY (run_id)
+                    REFERENCES research_runs(id)
             )
             """
         )
