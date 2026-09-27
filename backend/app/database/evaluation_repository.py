@@ -76,3 +76,25 @@ def get_evaluation(run_id: int) -> dict | None:
 
     finally:
         connection.close()
+
+def get_evaluation_summary() -> dict:
+    connection = get_connection()
+
+    try:
+        row = connection.execute(
+            """
+            SELECT
+                COUNT(*) AS total_evaluations,
+                ROUND(AVG(relevance_score), 2) AS avg_relevance,
+                ROUND(AVG(completeness_score), 2) AS avg_completeness,
+                ROUND(AVG(evidence_score), 2) AS avg_evidence,
+                ROUND(AVG(factuality_score), 2) AS avg_factuality,
+                ROUND(AVG(overall_score), 2) AS avg_overall
+            FROM evaluations
+            """
+        ).fetchone()
+
+        return dict(row)
+
+    finally:
+        connection.close()

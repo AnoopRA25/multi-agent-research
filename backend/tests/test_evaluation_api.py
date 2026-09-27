@@ -88,7 +88,7 @@ def test_get_existing_evaluation():
     initialize_database()
 
     run_id = create_research_run(
-        query="Test evaluation retrieval question",
+        query="What are the major applications of generative AI?",
         report="""
         # Research Report
 
@@ -115,3 +115,65 @@ def test_get_existing_evaluation():
 
     assert data["run_id"] == run_id
     assert "overall_score" in data
+
+def test_evaluate_uses_matching_dataset_case():
+    initialize_database()
+
+    run_id = create_research_run(
+        query="What are the major applications of generative AI?",
+        report="""
+        Generative AI has major application areas including
+        software development, education, and content generation.
+
+        Research and evidence indicate that these use cases are
+        expanding, although available evidence has limitations
+        and uncertainty.
+        """,
+        critique="",
+        latency_ms=100,
+        status="completed",
+    )
+
+    response = client.post(f"/evaluate/{run_id}")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["run_id"] == run_id
+    assert data["completeness_score"] > 0
+    assert data["overall_score"] > 0
+
+def test_evaluate_unknown_question():
+    initialize_database()
+
+    run_id = create_research_run(
+        query="This question does not exist in the evaluation dataset",
+        report="""
+        This is a completed research report with some evidence.
+        """,
+        critique="",
+        latency_ms=100,
+        status="completed",
+    )
+
+    response = client.post(f"/evaluate/{run_id}")
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == (
+        "No evaluation criteria found for this research question"
+    )
+
+def test_evaluation_summary():
+    response = client.get("/evaluate/summary")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert "total_evaluations" in data
+    assert "avg_relevance" in data
+    assert "avg_completeness" in data
+    assert "avg_evidence" in data
+    assert "avg_factuality" in data
+    assert "avg_overall" in data

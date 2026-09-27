@@ -16,7 +16,6 @@ def _score_criteria(report: str, criteria: list[str]) -> float:
         return 0.0
 
     report_lower = report.lower()
-
     matched = 0
 
     for criterion in criteria:
@@ -32,23 +31,31 @@ def _score_criteria(report: str, criteria: list[str]) -> float:
     return round((matched / len(criteria)) * 10, 2)
 
 
-def evaluate_report(
-    question: str,
-    report: str,
-    criteria: list[str],
-) -> EvaluationResult:
-    report_lower = report.lower()
-
-    relevance_score = 10.0 if any(
-        word.lower() in report_lower
+def _score_relevance(question: str, report: str) -> float:
+    question_words = {
+        word.lower().strip(".,?!")
         for word in question.split()
         if len(word) > 4
-    ) else 0.0
+    }
 
-    completeness_score = _score_criteria(
-        report,
-        criteria,
+    if not question_words:
+        return 0.0
+
+    report_lower = report.lower()
+
+    matched = sum(
+        word in report_lower
+        for word in question_words
     )
+
+    return round(
+        min(10.0, (matched / len(question_words)) * 10),
+        2,
+    )
+
+
+def _score_evidence(report: str) -> float:
+    report_lower = report.lower()
 
     evidence_keywords = [
         "evidence",
@@ -58,25 +65,92 @@ def evaluate_report(
         "according",
         "data",
         "report",
+        "finding",
+        "findings",
     ]
 
-    evidence_matches = sum(
+    matches = sum(
         keyword in report_lower
         for keyword in evidence_keywords
     )
 
-    evidence_score = min(
-        10.0,
-        round((evidence_matches / 4) * 10, 2),
+    return round(
+        min(10.0, (matches / 4) * 10),
+        2,
     )
 
-    factuality_score = 10.0
+
+def _score_factuality(report: str) -> float:
+    """
+    Deterministic proxy for factual consistency.
+
+    This does not verify facts against external sources.
+    It checks whether the report avoids obvious unsupported
+    certainty and acknowledges limitations/uncertainty.
+    """
+
+    report_lower = report.lower()
+
+    uncertainty_keywords = [
+        "uncertainty",
+        "uncertain",
+        "limitation",
+        "limitations",
+        "may",
+        "might",
+        "could",
+        "available evidence",
+    ]
+
+    matched = sum(
+        keyword in report_lower
+        for keyword in uncertainty_keywords
+    )
+
+    if not report.strip():
+        return 0.0
+
+    if matched >= 4:
+        return 10.0
+
+    if matched >= 2:
+        return 7.5
+
+    if matched >= 1:
+        return 5.0
+
+    return 3.0
+
+
+def evaluate_report(
+    question: str,
+    report: str,
+    criteria: list[str],
+) -> EvaluationResult:
+
+    relevance_score = _score_relevance(
+        question,
+        report,
+    )
+
+    completeness_score = _score_criteria(
+        report,
+        criteria,
+    )
+
+    evidence_score = _score_evidence(
+        report,
+    )
+
+    factuality_score = _score_factuality(
+        report,
+    )
 
     feedback = []
 
-    if relevance_score < 10:
+    if relevance_score < 7:
         feedback.append(
-            "The report may not directly address the research question."
+            "The report may not directly address enough of the research question."
         )
 
     if completeness_score < 7:
@@ -89,20 +163,24 @@ def evaluate_report(
             "The report contains limited explicit evidence-related language."
         )
 
+    if factuality_score < 7:
+        feedback.append(
+            "The report contains limited explicit uncertainty or limitation language."
+        )
+
     overall_score = round(
         (
             relevance_score
             + completeness_score
             + evidence_score
             + factuality_score
-        )
-        / 4,
+        ) / 4,
         2,
     )
 
     if not feedback:
         feedback.append(
-            "The report satisfies the basic deterministic evaluation checks."
+            "The report satisfies the deterministic evaluation checks."
         )
 
     return EvaluationResult(

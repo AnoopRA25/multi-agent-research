@@ -4,8 +4,10 @@ from backend.app.database.research_repository import get_research_run
 from backend.app.database.evaluation_repository import (
     create_evaluation,
     get_evaluation,
+    get_evaluation_summary,
 )
 from backend.app.evaluation.evaluator import evaluate_report
+from backend.app.evaluation.dataset_loader import load_evaluation_dataset
 
 
 router = APIRouter(prefix="/evaluate", tags=["Evaluation"])
@@ -33,14 +35,26 @@ def evaluate_run(run_id: int):
     if existing is not None:
         return existing
 
-    # Temporary evaluation criteria.
-    # These will later come from the evaluation dataset.
-    criteria = [
-        "key findings",
-        "supporting evidence",
-        "uncertainty",
-        "limitations",
-    ]
+    # Load evaluation criteria from the dataset.
+    dataset = load_evaluation_dataset()
+
+    case = next(
+        (
+            item
+            for item in dataset
+            if item["question"].strip().lower()
+            == run["query"].strip().lower()
+        ),
+        None,
+    )
+
+    if case is None:
+        raise HTTPException(
+            status_code=400,
+            detail="No evaluation criteria found for this research question",
+        )
+
+    criteria = case["criteria"]
 
     result = evaluate_report(
         question=run["query"],
@@ -66,6 +80,11 @@ def evaluate_run(run_id: int):
     }
 
 
+@router.get("/summary")
+def evaluation_summary():
+    return get_evaluation_summary()
+
+
 @router.get("/{run_id}")
 def get_run_evaluation(run_id: int):
     run = get_research_run(run_id)
@@ -85,3 +104,4 @@ def get_run_evaluation(run_id: int):
         )
 
     return evaluation
+

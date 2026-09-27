@@ -1,35 +1,222 @@
 [
-  {
-    "id": "eval_001",
-    "question": "What are the major applications of generative AI?",
-    "criteria": [
-      "Identifies major application areas",
-      "Provides supporting evidence",
-      "Explains important use cases",
-      "Mentions limitations or uncertainty",
-      "Avoids unsupported claims"
-    ]
-  },
-  {
-    "id": "eval_002",
-    "question": "What are the major challenges of deploying machine learning systems in production?",
-    "criteria": [
-      "Identifies important production challenges",
-      "Discusses data and model issues",
-      "Discusses infrastructure or operational issues",
-      "Provides supporting evidence",
-      "Mentions limitations or uncertainty"
-    ]
-  },
-  {
-    "id": "eval_003",
-    "question": "How is 5G different from 4G in terms of capabilities and applications?",
-    "criteria": [
-      "Explains major capability differences",
-      "Discusses performance characteristics",
-      "Identifies important application areas",
-      "Provides supporting evidence",
-      "Avoids unsupported claims"
-    ]
-  }
+    {
+        "id": "eval_001",
+        "question": "What are the major applications of generative AI?",
+        "criteria": [
+            "major application areas",
+            "supporting evidence",
+            "use cases",
+            "limitations and uncertainty",
+            "avoid unsupported claims"
+        ]
+    },
+    {
+        "id": "eval_002",
+        "question": "What are the major challenges of deploying machine learning systems in production?",
+        "criteria": [
+            "production challenges",
+            "data and model issues",
+            "infrastructure and operational issues",
+            "supporting evidence",
+            "uncertainty and limitations"
+        ]
+    },
+    {
+        "id": "eval_003",
+        "question": "How is 5G different from 4G in terms of capabilities and applications?",
+        "criteria": [
+            "capability differences",
+            "performance characteristics",
+            "applications",
+            "supporting evidence",
+            "avoid unsupported claims"
+        ]
+    },
+    {
+        "id": "eval_004",
+        "question": "What are the major applications of computer vision?",
+        "criteria": [
+            "computer vision applications",
+            "industry use cases",
+            "supporting evidence",
+            "limitations",
+            "uncertainty"
+        ]
+    },
+    {
+        "id": "eval_005",
+        "question": "What are the main challenges in training deep learning models?",
+        "criteria": [
+            "training challenges",
+            "data requirements",
+            "computational requirements",
+            "model optimization",
+            "limitations"
+        ]
+    },
+    {
+        "id": "eval_006",
+        "question": "What are the benefits and limitations of cloud computing?",
+        "criteria": [
+            "cloud computing benefits",
+            "cost and scalability",
+            "security considerations",
+            "limitations",
+            "supporting evidence"
+        ]
+    },
+    {
+        "id": "eval_007",
+        "question": "What are the main applications of Internet of Things technology?",
+        "criteria": [
+            "IoT applications",
+            "industry use cases",
+            "device connectivity",
+            "supporting evidence",
+            "limitations"
+        ]
+    },
+    {
+        "id": "eval_008",
+        "question": "What are the major cybersecurity challenges faced by organizations?",
+        "criteria": [
+            "cybersecurity threats",
+            "organizational risks",
+            "security controls",
+            "supporting evidence",
+            "limitations"
+        ]
+    },
+    {
+        "id": "eval_009",
+        "question": "What are the advantages and limitations of edge computing?",
+        "criteria": [
+            "edge computing advantages",
+            "latency",
+            "distributed processing",
+            "limitations",
+            "supporting evidence"
+        ]
+    },
+    {
+        "id": "eval_010",
+        "question": "What are the major applications of blockchain technology?",
+        "criteria": [
+            "blockchain applications",
+            "industry use cases",
+            "decentralization",
+            "supporting evidence",
+            "limitations"
+        ]
+    },
+    {
+        "id": "eval_011",
+        "question": "What are the main challenges of autonomous vehicles?",
+        "criteria": [
+            "autonomous vehicle challenges",
+            "perception and sensing",
+            "safety",
+            "regulatory considerations",
+            "limitations"
+        ]
+    },
+    {
+        "id": "eval_012",
+        "question": "How does reinforcement learning differ from supervised learning?",
+        "criteria": [
+            "learning differences",
+            "training signals",
+            "applications",
+            "supporting evidence",
+            "limitations"
+        ]
+    },
+    {
+        "id": "eval_013",
+        "question": "What are the major applications of natural language processing?",
+        "criteria": [
+            "NLP applications",
+            "language understanding",
+            "language generation",
+            "supporting evidence",
+            "limitations"
+        ]
+    },
+    {
+        "id": "eval_014",
+        "question": "What are the main challenges of deploying large language models?",
+        "criteria": [
+            "LLM deployment challenges",
+            "computational requirements",
+            "latency and cost",
+            "safety and reliability",
+            "limitations"
+        ]
+    },
+    {
+        "id": "eval_015",
+        "question": "What are the advantages and disadvantages of microservices architecture?",
+        "criteria": [
+            "microservices advantages",
+            "scalability",
+            "operational complexity",
+            "limitations",
+            "supporting evidence"
+        ]
+    },
+    {
+        "id": "eval_016",
+        "question": "What are the major uses of satellite imagery in environmental monitoring?",
+        "criteria": [
+            "satellite imagery applications",
+            "environmental monitoring",
+            "remote sensing",
+            "supporting evidence",
+            "limitations"
+        ]
+    },
+    {
+        "id": "eval_017",
+        "question": "What are the major challenges in developing medical AI systems?",
+        "criteria": [
+            "medical AI challenges",
+            "data quality",
+            "clinical validation",
+            "privacy and safety",
+            "limitations"
+        ]
+    },
+    {
+        "id": "eval_018",
+        "question": "What are the main advantages of containerization for software deployment?",
+        "criteria": [
+            "containerization advantages",
+            "deployment consistency",
+            "portability",
+            "resource efficiency",
+            "limitations"
+        ]
+    },
+    {
+        "id": "eval_019",
+        "question": "What are the main applications of digital signal processing?",
+        "criteria": [
+            "DSP applications",
+            "audio and speech",
+            "communications",
+            "image processing",
+            "supporting evidence"
+        ]
+    },
+    {
+        "id": "eval_020",
+        "question": "What are the major challenges in building reliable AI systems?",
+        "criteria": [
+            "AI reliability challenges",
+            "data quality",
+            "model robustness",
+            "evaluation",
+            "uncertainty and limitations"
+        ]
+    }
 ]
