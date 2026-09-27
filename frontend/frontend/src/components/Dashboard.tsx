@@ -1,16 +1,27 @@
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
 import { animate } from "animejs";
 
 import ResearchInput from "./ResearchInput";
 import AgentTimeline from "./AgentTimeline";
 import ReportViewer from "./ReportViewer";
 import SourceCards from "./SourceCards";
+import HistoryPanel from "./HistoryPanel";
+import EvaluationPanel from "./EvaluationPanel";
 
 import {
+  getEvaluation,
   getExecutions,
   getRun,
+  getRuns,
   getSources,
   type AgentExecution,
+  type Evaluation,
+  type ResearchRunSummary,
   type ResearchSource,
   type RunResponse,
   submitResearch,
@@ -18,20 +29,34 @@ import {
 
 
 export default function Dashboard() {
-  const heroRef = useRef<HTMLDivElement>(null);
+  const heroRef =
+    useRef<HTMLDivElement>(null);
 
-  const [run, setRun] = useState<RunResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [run, setRun] =
+    useState<RunResponse | null>(null);
 
-  const [executions, setExecutions] = useState<
-    AgentExecution[]
-  >([]);
+  const [runs, setRuns] =
+    useState<ResearchRunSummary[]>([]);
 
-  const [sources, setSources] = useState<
-    ResearchSource[]
-  >([]);
+  const [evaluation, setEvaluation] =
+    useState<Evaluation | null>(null);
 
+  const [loading, setLoading] =
+    useState(false);
+
+  const [error, setError] =
+    useState("");
+
+  const [executions, setExecutions] =
+    useState<AgentExecution[]>([]);
+
+  const [sources, setSources] =
+    useState<ResearchSource[]>([]);
+
+
+  /* =========================
+     HERO ANIMATION
+  ========================= */
 
   useEffect(() => {
     if (!heroRef.current) {
@@ -47,21 +72,158 @@ export default function Dashboard() {
   }, []);
 
 
-  const handleResearch = async (query: string) => {
+  /* =========================
+     LOAD HISTORY
+  ========================= */
+
+  useEffect(() => {
+    loadHistory();
+  }, []);
+
+
+  const loadHistory = async () => {
+    try {
+      const data =
+        await getRuns();
+
+      setRuns(
+        data.runs,
+      );
+    } catch {
+      // History is optional.
+    }
+  };
+
+
+  /* =========================
+     LOAD EVALUATION
+  ========================= */
+
+  const loadEvaluation = async (
+    runId: number,
+  ) => {
+    try {
+      const data =
+        await getEvaluation(runId);
+
+      /*
+       * The backend returns the evaluation
+       * object directly.
+       *
+       * Example:
+       *
+       * {
+       *   "evaluation_id": 33,
+       *   "id": 33,
+       *   "run_id": 72,
+       *   "relevance_score": 10,
+       *   "completeness_score": 8,
+       *   "evidence_score": 10,
+       *   "factuality_score": 7.5,
+       *   "overall_score": 8.88,
+       *   "feedback": "...",
+       *   "created_at": "..."
+       * }
+       */
+
+      setEvaluation(data);
+    } catch {
+      setEvaluation(null);
+    }
+  };
+
+
+  /* =========================
+     LOAD EXISTING RUN
+  ========================= */
+
+  const loadRunDetails = async (
+    runId: number,
+  ) => {
+    setError("");
+    setEvaluation(null);
+
+    try {
+      const currentRun =
+        await getRun(runId);
+
+      setRun(
+        currentRun,
+      );
+
+
+      const executionData =
+        await getExecutions(runId);
+
+      setExecutions(
+        executionData.executions,
+      );
+
+
+      const sourceData =
+        await getSources(runId);
+
+      setSources(
+        sourceData.sources,
+      );
+
+
+      if (
+        currentRun.status ===
+        "completed"
+      ) {
+        await loadEvaluation(
+          runId,
+        );
+      }
+
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to load research run.",
+      );
+    }
+  };
+
+
+  /* =========================
+     START NEW RESEARCH
+  ========================= */
+
+  const handleResearch = async (
+    query: string,
+  ) => {
     setLoading(true);
     setError("");
+
     setRun(null);
+    setEvaluation(null);
     setExecutions([]);
     setSources([]);
 
     try {
-      const job = await submitResearch(query);
+      const job =
+        await submitResearch(
+          query,
+        );
 
-      const initialRun = await getRun(job.run_id);
 
-      setRun(initialRun);
+      const initialRun =
+        await getRun(
+          job.run_id,
+        );
 
-      pollRun(job.run_id);
+
+      setRun(
+        initialRun,
+      );
+
+
+      pollRun(
+        job.run_id,
+      );
+
     } catch (err) {
       setError(
         err instanceof Error
@@ -74,38 +236,84 @@ export default function Dashboard() {
   };
 
 
-  const pollRun = async (runId: number) => {
-    try {
-      const currentRun = await getRun(runId);
+  /* =========================
+     POLL RUN STATUS
+  ========================= */
 
-      setRun(currentRun);
+  const pollRun = async (
+    runId: number,
+  ) => {
+    try {
+      const currentRun =
+        await getRun(runId);
+
+      setRun(
+        currentRun,
+      );
+
 
       if (
-        currentRun.status === "completed" ||
-        currentRun.status === "failed"
+        currentRun.status ===
+          "completed" ||
+        currentRun.status ===
+          "failed"
       ) {
+
+        /* =========================
+           LOAD EXECUTIONS
+        ========================= */
+
         try {
           const executionData =
-            await getExecutions(runId);
+            await getExecutions(
+              runId,
+            );
 
           setExecutions(
             executionData.executions,
           );
         } catch {
-          // Execution history is optional.
+          // Optional.
         }
 
 
+        /* =========================
+           LOAD SOURCES
+        ========================= */
+
         try {
           const sourceData =
-            await getSources(runId);
+            await getSources(
+              runId,
+            );
 
           setSources(
             sourceData.sources,
           );
         } catch {
-          // Sources are optional.
+          // Optional.
         }
+
+
+        /* =========================
+           LOAD EVALUATION
+        ========================= */
+
+        if (
+          currentRun.status ===
+          "completed"
+        ) {
+          await loadEvaluation(
+            runId,
+          );
+        }
+
+
+        /* =========================
+           REFRESH HISTORY
+        ========================= */
+
+        await loadHistory();
 
 
         setLoading(false);
@@ -114,8 +322,14 @@ export default function Dashboard() {
       }
 
 
+      /* =========================
+         CONTINUE POLLING
+      ========================= */
+
       setTimeout(() => {
-        pollRun(runId);
+        pollRun(
+          runId,
+        );
       }, 2000);
 
     } catch (err) {
@@ -130,8 +344,17 @@ export default function Dashboard() {
   };
 
 
+  /* =========================
+     UI
+  ========================= */
+
   return (
     <main className="dashboard">
+
+
+      {/* =========================
+          NAVBAR
+      ========================= */}
 
       <nav className="navbar">
 
@@ -159,6 +382,10 @@ export default function Dashboard() {
       </nav>
 
 
+      {/* =========================
+          HERO
+      ========================= */}
+
       <section
         ref={heroRef}
         className="hero"
@@ -180,19 +407,28 @@ export default function Dashboard() {
 
 
         <p>
-          Ask a research question and let a team of
-          specialized AI agents investigate, analyze,
-          write, and critique the results.
+          Ask a research question and let a
+          team of specialized AI agents
+          investigate, analyze, write, and
+          critique the results.
         </p>
 
       </section>
 
+
+      {/* =========================
+          RESEARCH INPUT
+      ========================= */}
 
       <ResearchInput
         onSubmit={handleResearch}
         loading={loading}
       />
 
+
+      {/* =========================
+          ERROR
+      ========================= */}
 
       {error && (
         <div className="error-message">
@@ -201,8 +437,27 @@ export default function Dashboard() {
       )}
 
 
+      {/* =========================
+          HISTORY
+      ========================= */}
+
+      <HistoryPanel
+        runs={runs}
+        onSelect={loadRunDetails}
+      />
+
+
+      {/* =========================
+          CURRENT RUN
+      ========================= */}
+
       {run && (
         <section className="research-status">
+
+
+          {/* =========================
+              STATUS CARD
+          ========================= */}
 
           <div className="status-card">
 
@@ -227,6 +482,10 @@ export default function Dashboard() {
             </p>
 
 
+            {/* =========================
+                RUNNING
+            ========================= */}
+
             {run.status === "running" && (
               <div className="research-loading">
 
@@ -240,6 +499,10 @@ export default function Dashboard() {
             )}
 
 
+            {/* =========================
+                COMPLETED
+            ========================= */}
+
             {run.status === "completed" && (
               <ReportViewer
                 report={run.report}
@@ -247,6 +510,10 @@ export default function Dashboard() {
               />
             )}
 
+
+            {/* =========================
+                FAILED
+            ========================= */}
 
             {run.status === "failed" && (
               <div className="failure-message">
@@ -265,15 +532,33 @@ export default function Dashboard() {
           </div>
 
 
+          {/* =========================
+              COMPLETED RUN DETAILS
+          ========================= */}
+
           {run.status === "completed" && (
             <>
+
+              {/* Agent Activity */}
+
               <AgentTimeline
                 executions={executions}
               />
 
+
+              {/* Research Sources */}
+
               <SourceCards
                 sources={sources}
               />
+
+
+              {/* AI Evaluation */}
+
+              <EvaluationPanel
+                evaluation={evaluation}
+              />
+
             </>
           )}
 
