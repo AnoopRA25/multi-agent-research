@@ -1,4 +1,14 @@
+from typing import Literal
+
 from pydantic import BaseModel, Field
+
+
+RunStatus = Literal[
+    "queued",
+    "running",
+    "completed",
+    "failed",
+]
 
 
 class QueryRequest(BaseModel):
@@ -13,6 +23,11 @@ class Source(BaseModel):
     title: str
     url: str
     snippet: str
+
+
+class JobResponse(BaseModel):
+    run_id: int
+    status: RunStatus
 
 
 class QueryResponse(BaseModel):

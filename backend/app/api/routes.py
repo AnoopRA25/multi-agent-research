@@ -1,6 +1,6 @@
 import time
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, BackgroundTasks
 
 from backend.app.database.database import initialize_database
 from backend.app.database.research_repository import (
@@ -8,19 +8,20 @@ from backend.app.database.research_repository import (
     update_research_run,
 )
 from backend.app.graph.workflow import research_graph
-from backend.app.schemas import QueryRequest, QueryResponse
+from backend.app.schemas import JobResponse, QueryRequest
+
 
 router = APIRouter()
 
 initialize_database()
 
 
-@router.post("/query", response_model=QueryResponse)
-def query(request: QueryRequest):
+def run_research_job(run_id: int, query: str) -> None:
     start_time = time.perf_counter()
 
-    run_id = create_research_run(
-        query=request.query,
+    # Mark the job as running before starting the workflow.
+    update_research_run(
+        run_id=run_id,
         report="",
         critique="",
         latency_ms=0,
@@ -28,13 +29,28 @@ def query(request: QueryRequest):
     )
 
     try:
+        # Test-only failure condition.
+        # This does NOT call Gemini.
+        # if query == "__TEST_FAILURE__":
+        #     raise RuntimeError("Intentional test failure")
+
         initial_state = {
             "run_id": run_id,
-            "query": request.query,
+            "query": query,
             "revision_count": 0,
         }
 
         final_state = research_graph.invoke(initial_state)
+
+        latency_ms = (time.perf_counter() - start_time) * 1000
+
+        update_research_run(
+            run_id=run_id,
+            report=final_state["report"],
+            critique=final_state.get("critique", ""),
+            latency_ms=round(latency_ms, 2),
+            status="completed",
+        )
 
     except Exception as exc:
         latency_ms = (time.perf_counter() - start_time) * 1000
@@ -47,28 +63,27 @@ def query(request: QueryRequest):
             status="failed",
         )
 
-        raise HTTPException(
-            status_code=503,
-            detail=str(exc),
-        ) from exc
 
-    latency_ms = (time.perf_counter() - start_time) * 1000
-
-    report = final_state["report"]
-    critique = final_state.get("critique", "")
-
-    update_research_run(
-        run_id=run_id,
-        report=report,
-        critique=critique,
-        latency_ms=round(latency_ms, 2),
-        status="completed",
+@router.post("/query", response_model=JobResponse)
+def query(
+    request: QueryRequest,
+    background_tasks: BackgroundTasks,
+):
+    run_id = create_research_run(
+        query=request.query,
+        report="",
+        critique="",
+        latency_ms=0,
+        status="queued",
     )
 
-    return QueryResponse(
+    background_tasks.add_task(
+        run_research_job,
+        run_id,
+        request.query,
+    )
+
+    return JobResponse(
         run_id=run_id,
-        answer=report,
-        sources=final_state.get("sources", []),
-        critique=critique,
-        latency_ms=round(latency_ms, 2),
+        status="queued",
     )
